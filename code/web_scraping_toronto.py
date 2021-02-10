@@ -1,5 +1,5 @@
 # Extract list of neighborhoods of the San Diego city from webpage and create dataset
-# url: https://en.wikipedia.org/wiki/Template:Neighborhoods_of_San_Diego
+# url: https://en.wikipedia.org/wiki/Template:Toronto_neighbourhoods
 import requests
 import pandas as pd
 import numpy as np
@@ -25,12 +25,12 @@ nav_box = soup.find(class_="navbox")
 odd = []
 even = []
 
-for ods in soup.findAll(class_="navbox-list navbox-odd"):
+for ods in soup.findAll(class_="navbox-list navbox-odd hlist"):
     for a in ods.find_all('a'):
         odd.append([a["href"], a["title"], a.text])
 # print(odd)
 
-for eve in soup.findAll(class_="navbox-list navbox-even"):
+for eve in soup.findAll(class_="navbox-list navbox-even hlist"):
     for a in eve.find_all('a'):
         even.append([a["href"], a["title"], a.text])
 # print(even)
@@ -41,51 +41,51 @@ neighbors = odd + even
 
 
 # create dataframe
-sd_df = pd.DataFrame()
+toronto_df = pd.DataFrame()
 
-sd_df['SD_Neighborhoods'] = neighbors
+toronto_df['toronto_Neighborhoods'] = neighbors
 # print(sd_df.head(10))
 
 # pre-process data
 neighborhoods = []
 address = []
 
-for i in sd_df['SD_Neighborhoods']:
+for i in toronto_df['toronto_Neighborhoods']:
     neighborhoods.append(i[-1])
 
-sd_df['Neighborhoods'] = neighborhoods
+toronto_df['Neighborhoods'] = neighborhoods
 # print(sd_df.head(10))
 
 # create a new df
-sd_neighbors = sd_df[['Neighborhoods']]
+toronto_neighbors = toronto_df[['Neighborhoods']]
 # print(sd_neighbors.head(10))
 # print(sd_neighbors.shape)
 
 # Add full address
-for val in sd_neighbors['Neighborhoods']:
-    ads = val + ',' + 'San Diego' + ',' + 'CA'
+for val in toronto_neighbors['Neighborhoods']:
+    ads = val + 'Toronto' + 'Canada'
     address.append(ads)
 
-sd_neighbors['Address'] = address
+toronto_neighbors['Address'] = address
 # print(sd_neighbors.head())
 
 
 # save to csv
-sd_neighbors.to_csv("../data/sd_neighbors.csv", index=False)
+toronto_neighbors.to_csv("../data/toronto_neighbors.csv", index=False)
 
 # get geographical coordinates of each neighborhood
-geolocator = Nominatim(user_agent="sd_hoods")
+geolocator = Nominatim(user_agent="toronto_hoods")
 
 geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1)
-sd_neighbors['Location'] = sd_neighbors['Address'].apply(geocode)
+toronto_neighbors['Location'] = toronto_neighbors['Address'].apply(geocode)
 
-sd_neighbors['Coordinates'] = sd_neighbors['Location'].apply(lambda loc: tuple(loc.point) if loc else None)
+toronto_neighbors['Coordinates'] = toronto_neighbors['Location'].apply(lambda loc: tuple(loc.point) if loc else None)
 
 # add columns tat and lng
 lat = []
 lng = []
 
-for i in sd_neighbors['Coordinates']:
+for i in toronto_neighbors['Coordinates']:
     if i is not None:
         lat.append(i[0])
         lng.append(i[1])
@@ -93,15 +93,15 @@ for i in sd_neighbors['Coordinates']:
         lat.append(np.nan)
         lng.append(np.nan)
 
-sd_neighbors['Latitude'] = lat
-sd_neighbors['Longitude'] = lng
+toronto_neighbors['Latitude'] = lat
+toronto_neighbors['Longitude'] = lng
 
-print(sd_neighbors.head(5))
+print(toronto_neighbors.head(5))
 
 
 # Save zip file
 compression_opts = dict(method='zip',
-                        archive_name='sd_neighborhoods.csv')
-sd_neighbors.to_csv('../data/sd_neighborhoods.zip', index=False,
+                        archive_name='toronto_neighborhoods.csv')
+toronto_neighbors.to_csv('../data/toronto_neighborhoods.zip', index=False,
           compression=compression_opts)
 

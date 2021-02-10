@@ -63,7 +63,7 @@ toronto_neighbors = toronto_df[['Neighborhoods']]
 
 # Add full address
 for val in toronto_neighbors['Neighborhoods']:
-    ads = val + 'Toronto' + 'Canada'
+    ads = val + ',' + 'Toronto' + ',' + 'Ontario'
     address.append(ads)
 
 toronto_neighbors['Address'] = address
